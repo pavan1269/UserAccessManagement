@@ -60,6 +60,7 @@ public class UserController {
 		return userService.getUserById(id);
 	}
 	
+	@Cacheable(cacheNames = "User")
 	@GetMapping(value = "/users")
 	public Flux<User> getUsers(){
 		return userService.getAllUsers() .delayElements(Duration.ofSeconds(1));
