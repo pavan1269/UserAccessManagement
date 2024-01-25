@@ -31,6 +31,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Mono<User> getUserById(Integer id) {
+		System.out.println("went to db.....");
 		return userRepo.findById(id);
 	}
 

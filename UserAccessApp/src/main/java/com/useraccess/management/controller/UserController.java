@@ -1,20 +1,13 @@
 package com.useraccess.management.controller;
 
 import java.time.Duration;
-import java.util.Collection;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;import org.springframework.security.web.util.ThrowableCauseExtractor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,16 +36,10 @@ public class UserController {
 	
 	private ReactiveUserDetailsService reactiveUserDetailsService;
 	
-	private PasswordEncoder encoder;
-	
-	@Autowired
-	private ReactiveAuthenticationManager authenticationManager;
-	
 	public UserController(UserServiceImpl userServiceImpl, JWTService jwtService, ReactiveUserDetailsService reactiveUserDetailsService, PasswordEncoder encoder) {
 		this.userService = userServiceImpl;
 		this.jwtService = jwtService;
 		this.reactiveUserDetailsService = reactiveUserDetailsService;
-		this.encoder = encoder;
 	}
 	
 	@PostMapping(value = "/add/user",
@@ -66,10 +53,11 @@ public class UserController {
 	public String createSampleUsers(){
 		return userService.createSampleUsers();
 	}
-
+	
+	@Cacheable(key = "#id",cacheNames = "User")
 	@GetMapping(value = "/user/{userId}")
 	public Mono<User> getUserById(@PathVariable("userId") Integer id ){
-		return userService.getUserById(id).log();
+		return userService.getUserById(id);
 	}
 	
 	@GetMapping(value = "/users")
@@ -88,10 +76,10 @@ public class UserController {
 									.defaultIfEmpty(null);
 		
 		return user.flatMap(u -> {
-				if( u!=null && u.getPassword()==(encoder.encode(request.getPassword()))) {
+				if( u!=null && u.getPassword().equals(request.getPassword())) {
 					return Mono.just(jwtService.generateToken(request.getUsername()));
-				}else {
-					return null;
+				} else {
+					return Mono.empty();
 				}
 		});
 	}

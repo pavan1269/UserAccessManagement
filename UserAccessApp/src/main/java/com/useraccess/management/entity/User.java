@@ -1,14 +1,15 @@
 package com.useraccess.management.entity;
 
+import java.io.Serializable;
+
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import lombok.Data;
 
 @Data
 @Table(name = "users")
-public class User {
+public class User implements Serializable{
 
 	@Id
 	private int id;

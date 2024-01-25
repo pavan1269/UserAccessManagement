@@ -43,7 +43,7 @@ public class JWTService {
 	
 	public boolean validate(UserDetails user, String token) {
 		Claims claims = Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody();
-		boolean unexpired = claims.getExpiration().after(new Date(System.currentTimeMillis()));
-		return unexpired && user.getUsername().equals(claims.getSubject());
+		boolean notexpired = claims.getExpiration().after(new Date(System.currentTimeMillis()));
+		return notexpired && user.getUsername().equals(claims.getSubject());
 	}
 }
